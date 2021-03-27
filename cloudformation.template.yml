@@ -1,0 +1,58 @@
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: A sample template
+
+Resources:
+  SevolabscomBucket:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketName: 'sevolabs.com'
+      AccessControl: PublicRead
+      # PublicAccessBlockConfiguration:
+      #   BlockPublicAcls: false
+      #   BlockPublicPolicy: false
+      #   IgnorePublicAcls: false
+      #   RestrictPublicBuckets: false
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+            AllowedOrigins:
+              - '*'
+      VersioningConfiguration:
+        Status: Enabled
+
+  SevoLabsWebRecord:
+    Type: AWS::Route53::RecordSet
+    DependsOn: SevolabscomBucket
+    Properties:
+      Name: 'sevolabs.com'
+      Type: A
+      AliasTarget: 
+        DNSName: 's3-website-eu-west-1.amazonaws.com'
+        # EvaluateTargetHealth: False
+        HostedZoneId: 'Z1BKCTXD74EZPE'
+      HostedZoneName: 'sevolabs.com.'
+      SetIdentifier: 'website'
+      Region: 'eu-west-1'
+
+  SevolabscomBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref SevolabscomBucket
+      PolicyDocument:
+        Statement:
+          - Action:
+              - 's3:GetObject'
+            Effect: Allow
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref SevolabscomBucket
+                - /*
+            Principal: '*'
