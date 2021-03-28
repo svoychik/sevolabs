@@ -8,11 +8,6 @@ Resources:
     Properties: 
       BucketName: 'sevolabs.com'
       AccessControl: PublicRead
-      # PublicAccessBlockConfiguration:
-      #   BlockPublicAcls: false
-      #   BlockPublicPolicy: false
-      #   IgnorePublicAcls: false
-      #   RestrictPublicBuckets: false
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: error.html
@@ -26,6 +21,23 @@ Resources:
               - '*'
       VersioningConfiguration:
         Status: Enabled
+
+  SevolabscomBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    DependsOn: SevolabscomBucket
+    Properties:
+      Bucket: !Ref SevolabscomBucket
+      PolicyDocument:
+        Statement:
+          - Action:
+              - 's3:GetObject'
+            Effect: Allow
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref SevolabscomBucket
+                - /*
+            Principal: '*'
 
   SevoLabsWebRecord:
     Type: AWS::Route53::RecordSet
@@ -41,18 +53,39 @@ Resources:
       SetIdentifier: 'website'
       Region: 'eu-west-1'
 
-  SevolabscomBucketPolicy:
-    Type: 'AWS::S3::BucketPolicy'
+  # SevolabsOriginAccessIdentity:
+  #   Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+  #   Properties: 
+  #     CloudFrontOriginAccessIdentityConfig: 
+  #       CloudFrontOriginAccessIdentityConfig
+
+  SevolabsCloudfrontDistribution:
+    Type: AWS::CloudFront::Distribution
     Properties:
-      Bucket: !Ref SevolabscomBucket
-      PolicyDocument:
-        Statement:
-          - Action:
-              - 's3:GetObject'
-            Effect: Allow
-            Resource: !Join
-              - ''
-              - - 'arn:aws:s3:::'
-                - !Ref SevolabscomBucket
-                - /*
-            Principal: '*'
+      DistributionConfig:
+        Aliases: 
+          - sevolabs.com
+        DefaultRootObject: index.html
+        Enabled: true
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          TargetOriginId: s3-sevolabs.com
+          ViewerProtocolPolicy: redirect-to-https
+          ForwardedValues:
+            QueryString: 'false'
+            Cookies:
+              Forward: none
+        Origins:
+          - DomainName: sevolabs.com.s3.amazonaws.com
+            Id: s3-sevolabs.com
+            CustomOriginConfig:
+              HTTPPort: '80'
+              HTTPSPort: '443'
+              OriginProtocolPolicy: https-only
+        ViewerCertificate:
+          AcmCertificateArn: arn:aws:acm:eu-west-1:403117364727:certificate/33772a3c-ed2d-4131-a065-f6b593bcb67e
+          SslSupportMethod: sni-only
+        IPV6Enabled: true
