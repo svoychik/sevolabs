@@ -39,20 +39,7 @@ Resources:
                 - /*
             Principal: '*'
 
-  SevoLabsWebRecord:
-    Type: AWS::Route53::RecordSet
-    DependsOn: SevolabscomBucket
-    Properties:
-      Name: 'sevolabs.com'
-      Type: A
-      AliasTarget: 
-        DNSName: 's3-website-eu-west-1.amazonaws.com'
-        # EvaluateTargetHealth: False
-        HostedZoneId: 'Z1BKCTXD74EZPE'
-      HostedZoneName: 'sevolabs.com.'
-      SetIdentifier: 'website'
-      Region: 'eu-west-1'
-
+  
   # SevolabsOriginAccessIdentity:
   #   Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
   #   Properties: 
@@ -63,29 +50,47 @@ Resources:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
-        Aliases: 
-          - sevolabs.com
-        DefaultRootObject: index.html
+        Origins:
+          - DomainName: sevolabs.com.s3-website-eu-west-1.amazonaws.com
+            Id: s3-sevolabs.com
+            CustomOriginConfig:
+              HTTPPort: '80'
+              HTTPSPort: '443'
+              OriginProtocolPolicy: http-only
         Enabled: true
+        DefaultRootObject: index.html
+        Aliases: 
+          - test2.sevolabs.com
         DefaultCacheBehavior:
+          TargetOriginId: s3-sevolabs.com
           AllowedMethods:
             - GET
             - HEAD
             - OPTIONS
-          TargetOriginId: s3-sevolabs.com
           ViewerProtocolPolicy: redirect-to-https
           ForwardedValues:
             QueryString: 'false'
             Cookies:
               Forward: none
-        Origins:
-          - DomainName: sevolabs.com.s3.amazonaws.com
-            Id: s3-sevolabs.com
-            CustomOriginConfig:
-              HTTPPort: '80'
-              HTTPSPort: '443'
-              OriginProtocolPolicy: https-only
         ViewerCertificate:
-          AcmCertificateArn: arn:aws:acm:eu-west-1:403117364727:certificate/33772a3c-ed2d-4131-a065-f6b593bcb67e
+          AcmCertificateArn: 'arn:aws:acm:us-east-1:403117364727:certificate/67eac6fe-828b-466d-847e-8ddf540b2179'
           SslSupportMethod: sni-only
         IPV6Enabled: true
+
+  SevolabsWebRecord: 
+    Type: 'AWS::Route53::RecordSet'
+    DependsOn: SevolabsCloudfrontDistribution
+    Properties:
+      Name: 'sevolabs.com.'
+      Type: 'AAAA'
+      # HostedZoneId is for ID for 'naaaaa.com.'; In theory its valid to use `HostedZoneName` OR `HostedZoneId`
+      # but in practice the recordset always failed to create if I used `HostedZoneName`
+      # HostedZoneName: 'sevolabs.com.'
+      HostedZoneId: 'Z06284668V08ZMMMLPS5'
+     #SetIdentifier: 'website'
+     #Region: 'eu-west-1'
+      AliasTarget:
+        DNSName: !GetAtt SevolabsCloudfrontDistribution.DomainName
+        # For CloudFront, HostedZoneId is always Z2FDTNDATAQYW2, see:
+        # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-route53-aliastarget.html#cfn-route53-aliastarget-hostedzoneid
+        HostedZoneId: 'Z2FDTNDATAQYW2'
