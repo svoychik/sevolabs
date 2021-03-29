@@ -60,7 +60,7 @@ Resources:
         Enabled: true
         DefaultRootObject: index.html
         Aliases: 
-          - test2.sevolabs.com
+          - sevolabs.com
         DefaultCacheBehavior:
           TargetOriginId: s3-sevolabs.com
           AllowedMethods:
@@ -73,7 +73,7 @@ Resources:
             Cookies:
               Forward: none
         ViewerCertificate:
-          AcmCertificateArn: 'arn:aws:acm:us-east-1:403117364727:certificate/67eac6fe-828b-466d-847e-8ddf540b2179'
+          AcmCertificateArn: 'arn:aws:acm:us-east-1:403117364727:certificate/128011dc-8827-4ed3-9481-5034b2c8c104'
           SslSupportMethod: sni-only
         IPV6Enabled: true
 
@@ -82,15 +82,9 @@ Resources:
     DependsOn: SevolabsCloudfrontDistribution
     Properties:
       Name: 'sevolabs.com.'
-      Type: 'AAAA'
-      # HostedZoneId is for ID for 'naaaaa.com.'; In theory its valid to use `HostedZoneName` OR `HostedZoneId`
-      # but in practice the recordset always failed to create if I used `HostedZoneName`
-      # HostedZoneName: 'sevolabs.com.'
+      Type: 'A'
       HostedZoneId: 'Z06284668V08ZMMMLPS5'
-     #SetIdentifier: 'website'
-     #Region: 'eu-west-1'
       AliasTarget:
         DNSName: !GetAtt SevolabsCloudfrontDistribution.DomainName
-        # For CloudFront, HostedZoneId is always Z2FDTNDATAQYW2, see:
-        # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-route53-aliastarget.html#cfn-route53-aliastarget-hostedzoneid
+        # For CloudFront, HostedZoneId is always Z2FDTNDATAQYW2
         HostedZoneId: 'Z2FDTNDATAQYW2'
