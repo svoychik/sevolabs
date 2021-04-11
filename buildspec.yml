@@ -16,6 +16,6 @@ phases:
     commands:
       - echo Build completed on `date`
 artifacts:
-  type: zip
+  base-directory: 'dist'
   files:
-    - dist/**/*
+    - '**/*'
