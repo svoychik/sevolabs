@@ -11,7 +11,7 @@ phases:
     commands:
       - echo Build started on `date`
       - npm install
-      - ./Deploy.sh
+      - ./deploy.sh
   post_build:
     commands:
       - echo Build completed on `date`

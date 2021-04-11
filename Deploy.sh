@@ -1,4 +1,4 @@
-#!/bin/bash
+#/bin/bash
 
 aws cloudformation deploy --stack-name sevolabs-web --template-file ./cloudformation.template.yml
 npm run build
