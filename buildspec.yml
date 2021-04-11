@@ -11,7 +11,7 @@ phases:
     commands:
       - echo Build started on `date`
       - npm install
-      - aws cloudformation deploy --stack-name sevolabs-web --template-file ./cloudformation.template.yml
+      - aws cloudformation deploy --stack-name sevolabs-web --template-file ./cloudformation.template.yml --no-fail-on-empty-changeset
       - npm run build
       - aws s3 sync ./dist s3://sevolabs.com
   post_build:
